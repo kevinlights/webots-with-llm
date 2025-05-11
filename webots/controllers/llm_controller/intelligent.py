@@ -9,40 +9,74 @@ class SimpleAi:
         self.llm = SimpleLLM()
         self.robot = bot
 
-    def _handle_move(self, action: dict, think_time: float = 0):
+    def _handle_move(self, action: dict):
         assert "distance" in action
         if action["direction"] == "forward":
-            self.robot.move_forward(action["distance"], think_time)
-        if action["direction"] == "back":
-            self.robot.move_back(action["distance"], think_time)
+            return self.robot.move_forward(action["distance"])
+        elif action["direction"] == "back":
+            return self.robot.move_back(action["distance"])
+        return 0
 
-    def _handle_rotate(self, action: dict, think_time: float = 0):
+    def _handle_rotate(self, action: dict):
         assert "angle" in action
         if action["direction"] == "left":
-            self.robot.turn_left(action["angle"], think_time)
-        if action["direction"] == "right":
-            self.robot.turn_right(action["angle"], think_time)
+            return self.robot.turn_left(action["angle"])
+        elif action["direction"] == "right":
+            return self.robot.turn_right(action["angle"])
+        return 0
 
-    def _handle_action(self, action: dict, think_time: float = 0):
+    def _handle_action_chain(self, actions: list[dict]):
+        total_time = 0
+        for i in range(len(actions)):
+            action = actions[i]
+            stop_on_finish = False
+            if i + 1 == len(actions):
+                stop_on_finish = True
+            total_time += self._handle_action(action)
+        return total_time
+
+    def _handle_action(self, action: dict):
         print(f"handle action: {action}")
         assert "type" in action
         assert "direction" in action
         if action["type"] == "move":
-            self._handle_move(action, think_time)
+            return self._handle_move(action)
         elif action["type"] == "rotate":
-            self._handle_rotate(action, think_time)
+            return self._handle_rotate(action)
         else:
             print(f"invalid action type: {action['type']}")
+        return 0
 
-    def think(self, input: str):
+    def think(self, input: str) -> dict:
         print(f"thinking: {input}")
         start = time.time()
         resp = self.llm.chat(input)
         think_time = time.time() - start
         print(f"end, think time: {round(think_time, 2)}s")
+        action = None
         try:
             action = json.loads(resp)
         except:
             print(f"invalid action response from LLM: {resp}")
 
-        self._handle_action(action, think_time)
+        return action
+
+    def think_chain(self, input: str) -> list:
+        print(f"thinking: {input}")
+        start = time.time()
+        resp = self.llm.plan(input)
+        think_time = time.time() - start
+        print(f"end, think time: {round(think_time, 2)}s")
+        print(f"plan result: {resp}")
+        actions = []
+        try:
+            plans = json.loads(resp)
+            assert len(plans) > 0
+            for plan in plans:
+                action = self.think(plan)
+                if action:
+                    actions.append(action)
+        except:
+            print(f"invalid action chain response from LLM: {resp}")
+
+        return actions

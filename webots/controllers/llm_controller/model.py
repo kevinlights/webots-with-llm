@@ -1,7 +1,21 @@
 # %%
 from openai import OpenAI
 
-WEBOTS_SYS_PROMPT = """
+WEBOTS_PLAN_SYS_PROMPT = """
+/no_think
+请不要思考，按照以下示例要求处理用户输入，并生成相应的 JSON 格式的结果：
+
+示例1：
+用户：正前方有障碍物
+输出：["向左转 30 度", "向前移动 20 厘米", "向右转 150 度"]
+
+数据说明：
+输出字符串列表，并按照实际躲避障碍物的逻辑顺序输出，障碍物宽度为 10 厘米
+
+请直接输出内容，不要用 Markdown
+"""
+
+WEBOTS_MOVE_SYS_PROMPT = """
 /no_think
 请不要思考，按照以下示例要求处理用户输入，并生成相应的 JSON 格式的结果：
 
@@ -26,6 +40,7 @@ WEBOTS_SYS_PROMPT = """
 
 THINK_PTN = "<think>\n\n</think>\n\n"
 
+
 class SimpleLLM:
     def __init__(self):
         self.client = self.get_client()
@@ -36,11 +51,23 @@ class SimpleLLM:
             base_url="http://localhost:11434/v1",
         )
 
+    def plan(self, prompt: str, model: str = "qwen3:4b"):
+        resp = self.client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": WEBOTS_PLAN_SYS_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0,
+            seed=0,
+        )
+        return resp.choices[0].message.content.replace(THINK_PTN, "")
+
     def chat(self, prompt: str, model: str = "qwen3:4b"):
         resp = self.client.chat.completions.create(
             model=model,
             messages=[
-                {"role": "system", "content": WEBOTS_SYS_PROMPT},
+                {"role": "system", "content": WEBOTS_MOVE_SYS_PROMPT},
                 {"role": "user", "content": prompt},
             ],
             temperature=0,
