@@ -99,31 +99,57 @@ spend_time = 0
 
 # Main loop:
 # - perform simulation steps until Webots is stopping the controller
+# while robot.step(timestep) != -1:
+#     # Read the sensors:
+#     # Enter here functions to read sensor data, like:
+#     #  val = ds.getValue()
+
+#     # Process sensor data here.
+#     if not running_action:
+#         if loop > 0 and loop % 200 == 0:
+#             print(f"\n======== loop: {loop} ========")
+#             # actions = ai.think_chain("正前方有障碍物")
+#             # running_action = True
+#             # start_time = robot.getTime()
+#             # spend_time = ai._handle_action_chain(actions)
+#             # new thread and loop?
+#         elif loop % 300 == 0:
+#             print(f"\n======== loop: {loop} ========")
+#             action = ai.think("向前移动 20 厘米")
+#             running_action = True
+#             start_time = robot.getTime()
+#             spend_time = ai._handle_action(action)
+#     if robot.getTime() - start_time > spend_time:
+#         stop()
+
+#     # Enter here functions to send actuator commands, like:
+#     #  motor.setPosition(10.0)
+#     loop += 1
+
+# # Enter here exit cleanup code.
+
+from task import SimpleTask
+import threading
+import time
+import random
+from log import SimpleLog
+
+task_processor = SimpleTask(timestep)
+processor_thread = threading.Thread(target=task_processor.process_tasks, args=(robot, ))
+processor_thread.daemon = True
+processor_thread.start()
+
+log = SimpleLog()
+
+actions = ai.think_chain("正前方有障碍物")
+task_processor.add_batch(actions)
 while robot.step(timestep) != -1:
-    # Read the sensors:
-    # Enter here functions to read sensor data, like:
-    #  val = ds.getValue()
+    log.debug("main loop is running...")
+    time.sleep(1)
+    if random.random() < 0.1:
+        action = ai.think("向前移动 20 厘米")
+        task_processor.add_task(action)
+        log.debug(f"added new task: {action}")
 
-    # Process sensor data here.
-    if not running_action:
-        if loop > 0 and loop % 200 == 0:
-            print(f"\n======== loop: {loop} ========")
-            # actions = ai.think_chain("正前方有障碍物")
-            # running_action = True
-            # start_time = robot.getTime()
-            # spend_time = ai._handle_action_chain(actions)
-            # new thread and loop?
-        elif loop % 300 == 0:
-            print(f"\n======== loop: {loop} ========")
-            action = ai.think("向前移动 20 厘米")
-            running_action = True
-            start_time = robot.getTime()
-            spend_time = ai._handle_action(action)
-    if robot.getTime() - start_time > spend_time:
-        stop()
-
-    # Enter here functions to send actuator commands, like:
-    #  motor.setPosition(10.0)
-    loop += 1
-
-# Enter here exit cleanup code.
+task_processor.stop_processing()
+processor_thread.join()

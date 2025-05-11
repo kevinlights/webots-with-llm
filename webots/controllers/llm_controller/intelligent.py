@@ -2,12 +2,13 @@ from model import SimpleLLM
 from bot import SimpleBot
 import json
 import time
-
+from log import SimpleLog
 
 class SimpleAi:
     def __init__(self, bot: SimpleBot):
         self.llm = SimpleLLM()
         self.robot = bot
+        self.log = SimpleLog()
 
     def _handle_move(self, action: dict):
         assert "distance" in action
@@ -29,14 +30,11 @@ class SimpleAi:
         total_time = 0
         for i in range(len(actions)):
             action = actions[i]
-            stop_on_finish = False
-            if i + 1 == len(actions):
-                stop_on_finish = True
             total_time += self._handle_action(action)
         return total_time
 
     def _handle_action(self, action: dict):
-        print(f"handle action: {action}")
+        self.log.info(f"handle action: {action}")
         assert "type" in action
         assert "direction" in action
         if action["type"] == "move":
@@ -44,30 +42,30 @@ class SimpleAi:
         elif action["type"] == "rotate":
             return self._handle_rotate(action)
         else:
-            print(f"invalid action type: {action['type']}")
+            self.log.error(f"invalid action type: {action['type']}")
         return 0
 
     def think(self, input: str) -> dict:
-        print(f"thinking: {input}")
+        self.log.info(f"thinking: {input}")
         start = time.time()
         resp = self.llm.chat(input)
         think_time = time.time() - start
-        print(f"end, think time: {round(think_time, 2)}s")
+        self.log.info(f"end, think time: {round(think_time, 2)}s")
         action = None
         try:
             action = json.loads(resp)
         except:
-            print(f"invalid action response from LLM: {resp}")
+            self.log.error(f"invalid action response from LLM: {resp}")
 
         return action
 
     def think_chain(self, input: str) -> list:
-        print(f"thinking: {input}")
+        self.log.info(f"thinking: {input}")
         start = time.time()
         resp = self.llm.plan(input)
         think_time = time.time() - start
-        print(f"end, think time: {round(think_time, 2)}s")
-        print(f"plan result: {resp}")
+        self.log.info(f"end, think time: {round(think_time, 2)}s")
+        self.log.info(f"plan result: {resp}")
         actions = []
         try:
             plans = json.loads(resp)
@@ -77,6 +75,6 @@ class SimpleAi:
                 if action:
                     actions.append(action)
         except:
-            print(f"invalid action chain response from LLM: {resp}")
+            self.log.error(f"invalid action chain response from LLM: {resp}")
 
         return actions
