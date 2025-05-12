@@ -163,22 +163,23 @@ def on_task_completed():
 
 while robot.step(timestep) != -1:
     # log.debug("main loop is running...")
+    try:
+        ps_values = []
+        found_obstacle = False
+        for ps in ps_list:
+            v = ps.getValue()
+            ps_values.append(v)
+            if v > 80.0:
+                found_obstacle = True
 
-    ps_values = []
-    found_obstacle = False
-    for ps in ps_list:
-        v = ps.getValue()
-        ps_values.append(v)
-        if v > 80.0:
-            found_obstacle = True
-
-    if not thinking and found_obstacle:
-        thinking = True
-        log.info(f"found obstacle: {ps_values}")
-        action = ai.drive(",".join([str(num) for num in ps_values]))
-        log.info(action)
-        task_processor.add_task(action, on_task_completed)
-        # thinking = False
+        if not thinking and found_obstacle:
+            thinking = True
+            log.info(f"found obstacle: {ps_values}")
+            action = ai.drive(",".join([str(num) for num in ps_values]))
+            log.info(action)
+            task_processor.add_task(action, on_task_completed)
+    except Exception as e:
+        log.error(f"failed to run main loop: {e}")
 
     time.sleep(1)
     # if random.random() < 0.1:

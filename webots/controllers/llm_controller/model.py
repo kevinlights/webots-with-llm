@@ -106,7 +106,7 @@ class SimpleLLM:
         return resp.choices[0].message.content.replace(THINK_PTN, "")
 
 
-    def drive(self, prompt: str, model: str = "qwen3:4b"):
+    def drive(self, prompt: str, model: str = "qwen2.5-coder:3b"):
         """drive based on inputs"""
         resp = self.client.chat.completions.create(
             model=model,
