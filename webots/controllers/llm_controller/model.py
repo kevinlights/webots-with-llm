@@ -38,6 +38,35 @@ WEBOTS_MOVE_SYS_PROMPT = """
 请直接输出内容，不要用 Markdown
 """
 
+WEBOTS_DRIVE_SYS_PROMPT = """
+/no_think
+请不要思考，按照以下示例要求处理用户输入，并生成相应的 JSON 格式的结果：
+
+解释用户输入：
+输入为 e-puck 的距离传感器的值，当某一项的值 > 80.0 时，说明在该方向遇到了障碍物，需要向相反的方向旋转避开。
+
+示例1：
+用户： 64.2372960348239,64.43472856799397,60.673098996510696,64.68005449001203,66.93555935014602,64.23424360041922,63.998718518724935,65.72668119056857
+输出：{"type": "move", "direction": "forward", "distance": "0.1"}
+解释：所有方向都没有障碍物，则向前移动 0.1米
+示例2：
+用户： 131.2372960348239,64.43472856799397,60.673098996510696,64.68005449001203,66.93555935014602,64.23424360041922,63.998718518724935,126.72668119056857
+输出：{"type": "rotate", "direction": "left", "angle": "90"}
+解释：前方两个传感器 0 和 7 的值都 > 80.0，说明在前方有障碍物，需要向左（或向右）转 90 度避开
+示例3：
+用户： 64.2372960348239,64.43472856799397,120.673098996510696,79.68005449001203,66.93555935014602,64.23424360041922,63.998718518724935,65.72668119056857
+输出：{"type": "move", "direction": "forward", "distance": "0.1"}
+解释：右侧有障碍物，但正前方没有障碍物，则向前移动 0.1米
+
+字段说明：
+- type: 枚举，允许的值有 [move, rotate]
+- direction: 枚举，允许的值有 [forward, back, left, right]
+- distance: float 类型
+- angle: float 类型
+
+请直接输出内容，不要用 Markdown
+"""
+
 THINK_PTN = "<think>\n\n</think>\n\n"
 
 
@@ -68,6 +97,20 @@ class SimpleLLM:
             model=model,
             messages=[
                 {"role": "system", "content": WEBOTS_MOVE_SYS_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0,
+            seed=0,
+        )
+        return resp.choices[0].message.content.replace(THINK_PTN, "")
+
+
+    def drive(self, prompt: str, model: str = "qwen3:4b"):
+        """drive based on inputs"""
+        resp = self.client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": WEBOTS_DRIVE_SYS_PROMPT},
                 {"role": "user", "content": prompt},
             ],
             temperature=0,

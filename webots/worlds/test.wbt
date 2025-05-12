@@ -10,7 +10,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.5773502691896258 0.5773502691896258 0.5773502691896258 2.0944
-  position 0.4247950243809958 0.11718769814278579 1.7257986238412157
+  position 0.38762476617586333 -0.0047723805464609205 1.8071815197311927
 }
 TexturedBackground {
 }
@@ -25,4 +25,22 @@ RectangleArena {
 }
 E-puck {
   controller "llm_controller"
+}
+Solid {
+  translation 0.37 0 0.0525
+  children [
+    DEF box Shape {
+      appearance PBRAppearance {
+        baseColor 1 0.149126 0
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.1 0.1 0.1
+      }
+    }
+  ]
+  boundingObject USE box
+  physics Physics {
+  }
 }

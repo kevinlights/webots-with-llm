@@ -62,6 +62,20 @@ class SimpleAi:
 
         return action
 
+    def drive(self, input: str) -> dict:
+        self.log.info(f"thinking: {input}")
+        start = time.time()
+        resp = self.llm.drive(input)
+        think_time = time.time() - start
+        self.log.info(f"end, think time: {round(think_time, 2)}s")
+        action = None
+        try:
+            action = json.loads(resp)
+        except:
+            self.log.error(f"invalid action response from LLM: {resp}")
+
+        return action
+
     def think_chain(self, input: str) -> list:
         self.log.info(f"thinking: {input}")
         start = time.time()

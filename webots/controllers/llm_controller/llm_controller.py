@@ -30,7 +30,17 @@ timestep = int(robot.getBasicTimeStep())
 left_motor = robot.getDevice("left wheel motor")
 right_motor = robot.getDevice("right wheel motor")
 gyro = robot.getDevice("gyro")
-gyro.enable(timestep)
+ps_list = []
+ps_names = [
+    "ps0",
+    "ps1",
+    "ps2",
+    "ps3",
+    "ps4",
+    "ps5",
+    "ps6",
+    "ps7",
+]
 
 
 def init():
@@ -38,6 +48,11 @@ def init():
     right_motor.setPosition(float("inf"))
     left_motor.setVelocity(0.0)
     right_motor.setVelocity(0.0)
+    gyro.enable(timestep)
+    for name in ps_names:
+        d = robot.getDevice(name)
+        ps_list.append(d)
+        d.enable(timestep)
 
 
 def calculate_rotation_time(degrees, speed):
@@ -134,14 +149,37 @@ processor_thread.start()
 threading.current_thread().name = "main"
 
 
-actions = ai.think_chain("正前方有障碍物")
-task_processor.add_batch(actions)
+# actions = ai.think_chain("正前方有障碍物")
+# task_processor.add_batch(actions)
 
 # action = ai.think("向前移动 20 厘米")
 # task_processor.add_task(action)
 
+thinking = False
+
+def on_task_completed():
+    global thinking
+    thinking = False
+
 while robot.step(timestep) != -1:
     # log.debug("main loop is running...")
+
+    ps_values = []
+    found_obstacle = False
+    for ps in ps_list:
+        v = ps.getValue()
+        ps_values.append(v)
+        if v > 80.0:
+            found_obstacle = True
+
+    if not thinking and found_obstacle:
+        thinking = True
+        log.info(f"found obstacle: {ps_values}")
+        action = ai.drive(",".join([str(num) for num in ps_values]))
+        log.info(action)
+        task_processor.add_task(action, on_task_completed)
+        # thinking = False
+
     time.sleep(1)
     # if random.random() < 0.1:
     #     action = ai.think("向前移动 20 厘米")
