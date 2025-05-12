@@ -94,6 +94,17 @@ def move_to_target(distance: float, speed: float):
     while robot.step(timestep) != -1:
         left_motor.setVelocity(speed)
         right_motor.setVelocity(speed)
+
+        if (
+            ps_list[0].getValue() > 300.0
+            or ps_list[1].getValue() > 300.0
+            or ps_list[6].getValue() > 300.0
+            or ps_list[7].getValue() > 300.0
+        ):
+            stop()
+            log.info("****** found obstacle, stopped ******")
+            break
+
         if time.time() - start > time_to_travel:
             log.debug(f"completed move {distance} \t {speed}")
             break
@@ -157,9 +168,11 @@ threading.current_thread().name = "main"
 
 thinking = False
 
+
 def on_task_completed():
     global thinking
     thinking = False
+
 
 def avoid_obstacle():
     global thinking
@@ -182,14 +195,16 @@ def avoid_obstacle():
         log.info(action)
         task_processor.add_task(action, on_task_completed)
 
+
 while robot.step(timestep) != -1:
     # log.debug("main loop is running...")
     try:
         # avoid_obstacle()
         ps_values = []
         for ps in ps_list:
-            v = ps.getValue()
+            v = round(ps.getValue(), 1)
             ps_values.append(v)
+
         if not thinking:
             thinking = True
             action = ai.drive(",".join([str(num) for num in ps_values]))

@@ -89,6 +89,7 @@ WEBOTS_PLAY_SYS_PROMPT = """
 - 请直接输出内容，不要用 Markdown
 - 当所有输入的值都 < 80.0 时，请向前移动
 - 当输入的某一项的值 > 80.0 时，说明在该方向遇到了障碍物，请向相反的方向旋转并移动来躲避
+- 如果上一次的输出是向左旋转 90 度： "{'type': 'rotate', 'direction': 'left', 'angle': '90'}"，这一次请不要输出向右旋转 90度："{'type': 'rotate', 'direction': 'right', 'angle': '90'}"
 """
 
 WEBOTS_PLAY_USER_PROMPT = """
