@@ -8,11 +8,13 @@ class SimpleBot:
         mv_back: FunctionType,
         turn_left: FunctionType,
         turn_right: FunctionType,
+        stop: FunctionType,
     ):
         self._mv_fwd = mv_fwd
         self._mv_back = mv_back
         self._turn_left = turn_left
         self._turn_right = turn_right
+        self._stop = stop
 
     def move_forward(self, distance: float):
         return self._mv_fwd(distance)
@@ -25,3 +27,6 @@ class SimpleBot:
 
     def turn_right(self, angle: float):
         return self._turn_right(angle)
+
+    def stop(self):
+        return self._stop()

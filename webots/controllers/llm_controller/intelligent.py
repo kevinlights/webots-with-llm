@@ -32,6 +32,9 @@ class SimpleAi:
             action = actions[i]
             total_time += self._handle_action(action)
         return total_time
+    
+    def stop(self):
+        self.robot.stop()
 
     def _handle_action(self, action: dict):
         self.log.info(f"handle action: {action}")

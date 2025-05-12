@@ -26,8 +26,13 @@ def init():
 def rotate(angle: float, speed: float):
     time_to_rotate = round(float(angle) * math.pi / 180 * wheel_radius / abs(speed), 2)
     print(f"time_to_rotate: {time_to_rotate}s")
-    left_motor.setVelocity(-speed)
-    right_motor.setVelocity(speed)
+    start = time.time()
+    while robot.step(timestep) != -1:
+        left_motor.setVelocity(-speed)
+        right_motor.setVelocity(speed)
+        if time.time() - start > time_to_rotate:
+            log.debug(f"completed rotate {angle} \t {speed}")
+            break
     return time_to_rotate
 
 
@@ -35,8 +40,13 @@ def move_to_target(distance: float, speed: float):
     time_to_travel = round(float(distance) / (abs(speed) * wheel_radius), 2)
     print(f"time_to_travel: {time_to_travel}s")
 
-    left_motor.setVelocity(speed)
-    right_motor.setVelocity(speed)
+    start = time.time()
+    while robot.step(timestep) != -1:
+        left_motor.setVelocity(speed)
+        right_motor.setVelocity(speed)
+        if time.time() - start > time_to_travel:
+            log.debug(f"completed move {distance} \t {speed}")
+            break
 
     return time_to_travel
 
@@ -77,10 +87,8 @@ def turn_right(angle: float):
 
 
 def stop():
-    left_motor.setPosition(0)
-    right_motor.setPosition(0)
-    global running_action
-    running_action = False
+    left_motor.setVelocity(0)
+    right_motor.setVelocity(0)
     # print("======== finished action ========")
 
 
@@ -91,6 +99,7 @@ bot = SimpleBot(
     mv_back=move_back,
     turn_left=turn_left,
     turn_right=turn_right,
+    stop=stop,
 )
 ai = SimpleAi(bot)
 
@@ -134,7 +143,7 @@ import time
 import random
 from log import SimpleLog
 
-task_processor = SimpleTask(timestep)
+task_processor = SimpleTask(ai, timestep)
 processor_thread = threading.Thread(
     name="task",
     target=task_processor.process_tasks,
@@ -147,15 +156,19 @@ threading.current_thread().name = "main"
 
 log = SimpleLog()
 
-actions = ai.think_chain("正前方有障碍物")
-task_processor.add_batch(actions)
+# actions = ai.think_chain("正前方有障碍物")
+# task_processor.add_batch(actions)
+
+action = ai.think("向前移动 20 厘米")
+task_processor.add_task(action)
+
 while robot.step(timestep) != -1:
-    log.debug("main loop is running...")
+    # log.debug("main loop is running...")
     time.sleep(1)
-    if random.random() < 0.1:
-        action = ai.think("向前移动 20 厘米")
-        task_processor.add_task(action)
-        log.debug(f"added new task: {action}")
+    # if random.random() < 0.1:
+    #     action = ai.think("向前移动 20 厘米")
+    #     task_processor.add_task(action)
+    # log.debug(f"added new task: {action}")
 
 task_processor.stop_processing()
 processor_thread.join()
