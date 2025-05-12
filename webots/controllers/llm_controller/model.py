@@ -138,7 +138,7 @@ class SimpleLLM:
         return resp.choices[0].message.content.replace(THINK_PTN, "")
 
 
-    def drive(self, prompt: str, model: str = "qwen2.5-coder:3b"):
+    def drive(self, prompt: str, model: str = "qwen2.5-coder:7b"):
         """drive based on inputs"""
         input = WEBOTS_PLAY_USER_PROMPT.replace("{{last_output}}", self.last_output).replace("{{current_input}}", prompt)
         resp = self.client.chat.completions.create(

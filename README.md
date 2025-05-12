@@ -27,6 +27,7 @@ The openai API will be avaiable on `http://localhost:11434/v1`
 
 ```shell
 ollama pull qwen2.5-coder:3b
+ollama pull qwen2.5-coder:7b
 ollama pull qwen3:4b
 ```
 
