@@ -15,12 +15,13 @@ from log import SimpleLog
 robot = Robot()
 log = SimpleLog()
 
-wheel_speed = 1.0
+MAX_SPEED = 6.28
 
-wheel_radius = 0.02
-wheel_diameter = wheel_radius * 2
-wheel_base = 0.052  # 轮距，单位：米
-wheel_circumference = wheel_diameter * math.pi  # 轮子周长
+wheel_speed = 0.5 * MAX_SPEED
+wheel_rotate_speed = 0.5 * MAX_SPEED
+wheel_radius = 0.0205  # 轮子半径 (m)
+axle_length = 0.052  # 轴距 (m)
+
 
 # get the time step of the current world.
 timestep = int(robot.getBasicTimeStep())
@@ -39,13 +40,25 @@ def init():
     right_motor.setVelocity(0.0)
 
 
+def calculate_rotation_time(degrees, speed):
+
+    # 将输入的角度转换为弧度
+    theta_body = math.radians(degrees)
+
+    # 计算机器人的旋转速度 (原地旋转时，两轮速度相反)
+    # ω_body = (r * (ω_right - ω_left)) / L
+    # 原地旋转时，ω_right = +wheel_speed, ω_left = -wheel_speed
+    omega_body = (wheel_radius * abs(speed) * 2) / axle_length
+
+    # 计算所需时间: t = θ_body / ω_body
+    rotation_time = theta_body / omega_body
+
+    return rotation_time
+
+
 def rotate(angle: float, speed: float):
-    rotation_radius = wheel_base / 2  # 旋转半径
-    rotation_distance = (float(angle) * math.pi / 180) * rotation_radius  # 弧长
-    # 计算旋转时间
-    # 注意：这里我们假设左右轮速度差为10，因为left_motor速度为-5，right_motor速度为5
     time_to_rotate = round(
-        rotation_distance / (wheel_circumference * 2 * abs(speed)), 2
+        calculate_rotation_time(float(angle), speed), 2
     )  # 旋转时间，单位：秒
     log.info(f"time_to_rotate: {time_to_rotate}s")
     start = time.time()
@@ -85,12 +98,12 @@ def move_back(distance: float):
 
 def turn_left(angle: float):
     log.info(f"turn_left: {angle}")
-    return rotate(angle, wheel_speed)
+    return rotate(angle, wheel_rotate_speed)
 
 
 def turn_right(angle: float):
     log.info(f"turn_right: {angle}")
-    return rotate(angle, -wheel_speed)
+    return rotate(angle, -wheel_rotate_speed)
 
 
 def stop():
