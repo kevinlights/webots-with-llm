@@ -161,20 +161,37 @@ def on_task_completed():
     global thinking
     thinking = False
 
+def avoid_obstacle():
+    global thinking
+    global task_processor
+    global ps_list
+    global log
+    global ai
+    ps_values = []
+    found_obstacle = False
+    for ps in ps_list:
+        v = ps.getValue()
+        ps_values.append(v)
+        if v > 80.0:
+            found_obstacle = True
+
+    if not thinking and found_obstacle:
+        thinking = True
+        log.info(f"found obstacle: {ps_values}")
+        action = ai.drive(",".join([str(num) for num in ps_values]))
+        log.info(action)
+        task_processor.add_task(action, on_task_completed)
+
 while robot.step(timestep) != -1:
     # log.debug("main loop is running...")
     try:
+        # avoid_obstacle()
         ps_values = []
-        found_obstacle = False
         for ps in ps_list:
             v = ps.getValue()
             ps_values.append(v)
-            if v > 80.0:
-                found_obstacle = True
-
-        if not thinking and found_obstacle:
+        if not thinking:
             thinking = True
-            log.info(f"found obstacle: {ps_values}")
             action = ai.drive(",".join([str(num) for num in ps_values]))
             log.info(action)
             task_processor.add_task(action, on_task_completed)
