@@ -135,9 +135,15 @@ import random
 from log import SimpleLog
 
 task_processor = SimpleTask(timestep)
-processor_thread = threading.Thread(target=task_processor.process_tasks, args=(robot, ))
+processor_thread = threading.Thread(
+    name="task",
+    target=task_processor.process_tasks,
+    args=(robot,),
+)
 processor_thread.daemon = True
 processor_thread.start()
+
+threading.current_thread().name = "main"
 
 log = SimpleLog()
 
