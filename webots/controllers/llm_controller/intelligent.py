@@ -4,6 +4,9 @@ import json
 import time
 from log import SimpleLog
 
+DEFAULT_ACTION = {"type": "rotate", "direction": "left", "angle": "1"}
+
+
 class SimpleAi:
     def __init__(self, bot: SimpleBot):
         self.llm = SimpleLLM()
@@ -32,7 +35,7 @@ class SimpleAi:
             action = actions[i]
             total_time += self._handle_action(action)
         return total_time
-    
+
     def stop(self):
         self.robot.stop()
 
@@ -54,7 +57,7 @@ class SimpleAi:
         resp = self.llm.chat(input)
         think_time = time.time() - start
         self.log.info(f"end, think time: {round(think_time, 2)}s")
-        action = None
+        action = DEFAULT_ACTION
         try:
             action = json.loads(resp)
         except:
@@ -65,10 +68,11 @@ class SimpleAi:
     def drive(self, input: str) -> dict:
         self.log.info(f"thinking: {input}")
         start = time.time()
-        resp = self.llm.drive(input)
+        # resp = self.llm.drive(input)
+        resp = self.llm.drive_with_think(input)
         think_time = time.time() - start
         self.log.info(f"end, think time: {round(think_time, 2)}s")
-        action = None
+        action = DEFAULT_ACTION
         try:
             action = json.loads(resp)
         except:
@@ -83,7 +87,7 @@ class SimpleAi:
         think_time = time.time() - start
         self.log.info(f"end, think time: {round(think_time, 2)}s")
         self.log.info(f"plan result: {resp}")
-        actions = []
+        actions = [DEFAULT_ACTION]
         try:
             plans = json.loads(resp)
             assert len(plans) > 0

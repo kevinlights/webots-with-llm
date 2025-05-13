@@ -6,5 +6,7 @@ maximizedDockId: -1
 centralWidgetVisible: 1
 orthographicViewHeight: 1
 textFiles: 0 "controllers/simple_rotate/simple_rotate.py"
+robotWindow: e-puck
+globalOptionalRendering: CoordinateSystem::LightPositions
 consoles: Console:All:All
 renderingDevicePerspectives: e-puck:camera;1;1;0;0

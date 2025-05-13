@@ -10,12 +10,16 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.004602095582669844 0.9999729290629326 -0.005741241812318211 1.3508255603277715
-  position -1.8620100367385912 -0.44543850762379733 5.3195689019386005
+  orientation -0.6999978586538008 -0.0032212785123428996 0.7141376766736506 3.1481693648239113
+  position -0.7655348751140347 0.1388331499204125 3.247386084518623
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
+}
+DirectionalLight {
+  direction -1 0 -1
+  intensity 2
 }
 Floor {
   appearance Parquetry {
@@ -24,19 +28,24 @@ Floor {
 }
 E-puck {
   translation -0.528619 0.333007 -1.55468e-14
-  rotation 0 0 1 3.14
+  rotation 0 0 1 1.5707903061004251
   controller "llm_controller"
 }
 Solid {
 }
 Wall {
-  translation -0.692105 -0.100904 0.01
-  size 0.1 1.8 0.1
+  translation -0.692105 -0.160904 0.01
+  size 0.1 2.2 0.1
 }
 Wall {
-  translation -1.39211 -0.11 0.01
+  translation -1.04211 0.029096 0.01
+  name "wall(6)"
+  size 0.1 2.2 0.1
+}
+Wall {
+  translation -1.39211 -0.21 0.01
   name "wall(4)"
-  size 0.1 2.5 0.1
+  size 0.1 2.3 0.1
 }
 Wall {
   translation -0.94133 1.17889 0.01

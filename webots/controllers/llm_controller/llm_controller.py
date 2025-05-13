@@ -203,6 +203,7 @@ while robot.step(timestep) != -1:
         ps_values = []
         for ps in ps_list:
             v = round(ps.getValue(), 1)
+            # v = 1 if v > 80.0 else 0
             ps_values.append(v)
 
         if not thinking:
