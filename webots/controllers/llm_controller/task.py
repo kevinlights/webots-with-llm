@@ -26,12 +26,14 @@ class SimpleTask:
 
     def process_tasks(self, robot):
         self.processing = False # 永远执行
+        last_callback = None
         while robot.step(self.timestep) != -1:
             try:
                 with self.lock:
                     if not self.processing and not self.task_queue.empty():
                         self.processing = True # 开始处理
                         task, callback = self.task_queue.get_nowait()
+                        last_callback = callback
                         self.execute_task(task)
                         if callback:
                             callback()
@@ -40,11 +42,18 @@ class SimpleTask:
                             self.ai.stop()
                             self.processing = False
             except queue.Empty:
+                self.processing = False
                 time.sleep(0.1)
                 self.ai.stop()
-                self.processing = False
+                if last_callback:
+                    last_callback()
             except Exception as e:
+                self.processing = False
                 self.log.error(f"error processing task: {e}")
+                time.sleep(0.1)
+                self.ai.stop()
+                if last_callback:
+                    last_callback()
 
     def execute_task(self, task):
         self.log.info(f"executing task: {task}")

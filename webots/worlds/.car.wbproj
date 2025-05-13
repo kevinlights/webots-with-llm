@@ -9,4 +9,4 @@ textFiles: 0 "controllers/simple_rotate/simple_rotate.py"
 robotWindow: e-puck
 globalOptionalRendering: CoordinateSystem::LightPositions
 consoles: Console:All:All
-renderingDevicePerspectives: e-puck:camera;1;1;0;0
+renderingDevicePerspectives: e-puck:camera;1;6.51923;0;0

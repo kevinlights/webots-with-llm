@@ -213,6 +213,7 @@ while robot.step(timestep) != -1:
             task_processor.add_task(action, on_task_completed)
     except Exception as e:
         log.error(f"failed to run main loop: {e}")
+        thinking = False
 
     time.sleep(1)
     # if random.random() < 0.1:

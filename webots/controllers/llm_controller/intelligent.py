@@ -69,7 +69,8 @@ class SimpleAi:
         self.log.info(f"thinking: {input}")
         start = time.time()
         # resp = self.llm.drive(input)
-        resp = self.llm.drive_with_think(input)
+        # resp = self.llm.drive_with_think(input)
+        resp = self.llm.zhipu_chat(input)
         think_time = time.time() - start
         self.log.info(f"end, think time: {round(think_time, 2)}s")
         action = DEFAULT_ACTION
