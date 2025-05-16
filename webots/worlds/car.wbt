@@ -27,9 +27,9 @@ Floor {
   }
 }
 E-puck {
-  translation -0.528619 0.333007 -1.55468e-14
+  translation -0.528619 0.693007 -1.55468e-14
   rotation 0 0 1 1.5707903061004251
-  controller "llm_controller"
+  controller "cnn_controller"
 }
 Solid {
 }
