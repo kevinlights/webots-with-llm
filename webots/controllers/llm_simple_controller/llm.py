@@ -26,7 +26,6 @@ class SimpleLLM:
         self,
         prompt: str,
         tool_schemas: list,
-        tool_dict: dict,
         model: str = "qwen2.5:3b",
     ):
         resp = self.client.chat.completions.create(
@@ -45,9 +44,14 @@ class SimpleLLM:
         if resp.choices[0].message.tool_calls:
             tool_call = resp.choices[0].message.tool_calls[0]
             self.log.info(tool_call.function)
-            func_name = tool_call.function.name
-            args = json.loads(tool_call.function.arguments)
-            if func_name in tool_dict:
-                result = tool_dict[func_name](**args)
-                return f"tool executed completed: {result}"
-            return f'no tools executed: {resp.choices[0].message.content.replace(EMPTY_THINK_PTN, "")}'
+            return tool_call.function
+            # func_name = tool_call.function.name
+            # args = json.loads(tool_call.function.arguments)
+            # if func_name in tool_dict:
+            #     result = tool_dict[func_name](**args)
+            #     return f"tool executed completed: {result}"
+            # return f'no tools executed: {resp.choices[0].message.content.replace(EMPTY_THINK_PTN, "")}'
+        else:
+            raise Exception(
+                f'no tool call returned: {resp.choices[0].message.content.replace(EMPTY_THINK_PTN, "")}'
+            )

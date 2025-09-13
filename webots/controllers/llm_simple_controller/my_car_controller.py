@@ -4,6 +4,8 @@ from llm import SimpleLLM
 import time
 from utils import function_to_tool
 from functools import partial
+from task import SimpleTask
+import threading
 
 
 class MyCarController:
@@ -11,35 +13,22 @@ class MyCarController:
         self.log = SimpleLog()
         self.car = MyCar(log=self.log)
         self.llm = SimpleLLM(log=self.log)
-        self.bound_funcs()
+        self.task = SimpleTask(log=self.log, robot=self.car, timestep=self.car.timestep)
 
         self.thinking = False
-        self.log.info(self.get_tool_schemas())
+        threading.current_thread().name = "main"
+
+    def init_task(self):
+        self.task_thread = threading.Thread(
+            name="task",
+            target=self.task.process_tasks,
+            args=None,
+        )
+        self.task_thread.daemon = True
+        self.task_thread.start()
 
     def on_task_completed(self):
         self.thinking = False
-
-    def bound_funcs(self):
-        self.turn_left = partial(self.car.turn_left)
-        self.turn_right = partial(self.car.turn_right)
-        self.move_forward = partial(self.car.move_forward)
-        self.move_back = partial(self.car.move_back)
-
-    def get_tool_schemas(self):
-        return [
-            function_to_tool(self.car.turn_left),
-            function_to_tool(self.car.turn_right),
-            function_to_tool(self.car.move_forward),
-            function_to_tool(self.car.move_back),
-        ]
-
-    def get_tools(self):
-        return {
-            "turn_left": self.turn_left,
-            "turn_right": self.turn_right,
-            "move_forward": self.move_forward,
-            "move_back": self.move_back,
-        }
 
     def run(self):
         while self.car.robot.step(self.car.timestep) != -1:
@@ -49,15 +38,16 @@ class MyCarController:
 
                 if not self.thinking:
                     self.thinking = True
-                    self.llm.plan(
+                    task = self.llm.plan(
                         obstacles,
-                        tool_schemas=self.get_tool_schemas(),
-                        tool_dict=self.get_tools(),
+                        tool_schemas=self.car.get_tool_schemas(),
                         model="qwen2.5:3b",
                     )
-                    self.on_task_completed()
+                    self.task.add_task(task, self.on_task_completed)
             except Exception as e:
                 self.log.error(f"failed to run main loop: {e}")
                 self.thinking = False
 
             time.sleep(1)
+        self.task.stop_processing()
+        self.task_thread.join()

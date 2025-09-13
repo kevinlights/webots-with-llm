@@ -1,13 +1,29 @@
 from controller import Robot
-import threading
+import json
 import time
 import math
+from utils import function_to_tool
+from functools import partial
 
 
-class MyCar:
+class MyRobot:
+    def __init__(self, robot: Robot):
+        self.webot = robot
+
+    def handle_task(self, task):
+        pass
+
+    def stop(self):
+        pass
+
+
+class MyCar(MyRobot):
     def __init__(self, log):
         self.log = log
         self.robot = Robot()
+
+        super().__init__(self.robot)
+
         self.left_motor = self.robot.getDevice("left wheel motor")
         self.right_motor = self.robot.getDevice("right wheel motor")
         self.gyro = self.robot.getDevice("gyro")
@@ -31,9 +47,9 @@ class MyCar:
         }
 
         self.init()
+        self.bound_funcs()
 
     def init(self):
-        threading.current_thread().name = "main"
         self.timestep = int(self.robot.getBasicTimeStep())
         self.left_motor.setPosition(float("inf"))
         self.right_motor.setPosition(float("inf"))
@@ -181,3 +197,34 @@ class MyCar:
         """
         self.log.info(f"turn_right: {angle}")
         return self.rotate(angle, -self.wheel_rotate_speed)
+
+    def get_tool_schemas(self):
+        return [
+            function_to_tool(self.turn_left),
+            function_to_tool(self.turn_right),
+            function_to_tool(self.move_forward),
+            function_to_tool(self.move_back),
+        ]
+
+    def bound_funcs(self):
+        self.bound_turn_left = partial(self.turn_left)
+        self.bound_turn_right = partial(self.turn_right)
+        self.bound_move_forward = partial(self.move_forward)
+        self.bound_move_back = partial(self.move_back)
+
+    def get_tools(self):
+        return {
+            "turn_left": self.bound_turn_left,
+            "turn_right": self.bound_turn_right,
+            "move_forward": self.bound_move_forward,
+            "move_back": self.bound_move_back,
+        }
+
+    def handle_task(self, task):
+        func_name = task.name
+        args = json.loads(task.arguments)
+        if func_name in self.get_tools():
+            result = self.get_tools()[func_name](**args)
+            self.log.info(f"tool executed completed: {result}")
+        else:
+            self.log.info(f"invalid task: {task}")
