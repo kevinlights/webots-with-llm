@@ -42,7 +42,7 @@ class MyCar(MyRobot):
             "ps3": "右后方",
             "ps4": "左后方",
             "ps5": "左边",
-            "ps6": "左前",
+            "ps6": "左前方",
             "ps7": "前方偏左",
         }
 
@@ -132,14 +132,17 @@ class MyCar(MyRobot):
 
         start = time.time()
         while self.robot.step(self.timestep) != -1:
+            # self.log.debug(f"set velocity {speed} for motor")
             self.left_motor.setVelocity(speed)
             self.right_motor.setVelocity(speed)
 
+            # self.log.debug(f"check blocked")
             if self.blocked(300):
                 self.stop()
                 self.log.info("****** found obstacle, stopped ******")
                 break
 
+            # self.log.debug(f"check travel time")
             if time.time() - start > time_to_travel:
                 self.log.debug(f"completed move {distance} \t {speed}")
                 break
@@ -223,6 +226,7 @@ class MyCar(MyRobot):
     def handle_task(self, task):
         func_name = task.name
         args = json.loads(task.arguments)
+        self.log.debug(f"func_name={func_name}")
         if func_name in self.get_tools():
             result = self.get_tools()[func_name](**args)
             self.log.info(f"tool executed completed: {result}")
