@@ -45,6 +45,7 @@ class MyCar(MyRobot):
             "ps6": "左前方",
             "ps7": "前方偏左",
         }
+        self.block_locs = ["前方偏右", "前方偏左", "右前方", "左前方"]
 
         self.init()
         self.bound_funcs()
@@ -73,8 +74,8 @@ class MyCar(MyRobot):
         self.get_ps_values()
         if not threshold:
             threshold = self.obstacle_threshold
-        block_locs = ["前方偏右", "前方偏左", "右前方", "左前方"]
-        for loc in block_locs:
+
+        for loc in self.block_locs:
             if self.ps_values[loc] >= threshold:
                 return True
         return False
@@ -86,7 +87,7 @@ class MyCar(MyRobot):
         if not threshold:
             threshold = self.obstacle_threshold
         for loc, v in self.ps_values.items():
-            if v >= threshold:
+            if v >= threshold and loc in self.block_locs:
                 self.log.debug(f"found obstacle in [{loc}], value={v}")
                 obstacle_locations.append(loc)
         if not obstacle_locations:

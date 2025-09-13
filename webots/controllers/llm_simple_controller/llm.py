@@ -13,7 +13,7 @@ class SimpleLLM:
         self.sys_prompt = """
 你是一个智能机器人，接收用户指令，并调用工具来响应指令。
 输入的指令为障碍物方向，响应为调用工具和对应参数。
-如果周围没有障碍物，则向前移动 0.1m。
+如果周围没有障碍物，则向前移动 0.5m。
 """
 
     def get_client(self):
@@ -34,8 +34,8 @@ class SimpleLLM:
                 {"role": "system", "content": self.sys_prompt},
                 {"role": "user", "content": prompt},
             ],
-            temperature=0,
-            seed=0,
+            temperature=0.7,
+            # seed=0,
             tools=tool_schemas,
             tool_choice="required",
         )
